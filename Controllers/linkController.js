@@ -1,13 +1,14 @@
 import Link from "../Models/linkModel.js";
 import User from "../Models/userModel.js";
 
-
 const LinkController = {
     getLink: async (req, res) => {
         try {
             const link = await Link.findOne({
-                _id: req.params.id,
-                _id: { $in: req.links }
+                _id: {
+                    $in: req.links,
+                    $eq: req.params.id 
+                }
             });
             if (!link)
                 return res.status(404).json({ error: "Link not found" });
@@ -66,8 +67,10 @@ const LinkController = {
             const link = await Link.findByIdAndUpdate
                 (
                     {
-                        _id: req.params.id,
-                        _id: { $in: req.links }
+                        _id: {
+                            $in: req.links,
+                            $eq: req.params.id 
+                        }
                     },
                     { originalUrl },
                     { new: true }
@@ -82,10 +85,12 @@ const LinkController = {
     },
     deleteLink: async (req, res) => {
         try {
-            const link = await Link.findByIdAndDelete(
+            const link = await Link.findOneAndDelete(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                        $in: req.links,
+                        $eq: req.params.id 
+                    }
                 }
             );
             if (!link)
@@ -100,8 +105,9 @@ const LinkController = {
         try {
             const link = await Link.findById(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                     $in: req.links,
+                     $eq: req.params.id }
                 }
             );
             if (!link)
@@ -118,8 +124,10 @@ const LinkController = {
         try {
             const link = await Link.findById(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                        $in: req.links,
+                        $eq: req.params.id 
+                    }
                 }
             );
             if (!link)
@@ -139,8 +147,10 @@ const LinkController = {
         try {
             const link = await Link.findById(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                        $in: req.links,
+                        $eq: req.params.id 
+                    }
                 }
             );
             if (!link)
@@ -162,8 +172,10 @@ const LinkController = {
         try {
             const link = await Link.findById(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                        $in: req.links,
+                        $eq: req.params.id 
+                    }
                 }
             );
             if (!link)
@@ -183,8 +195,10 @@ const LinkController = {
         try {
             const link = await Link.findById(
                 {
-                    _id: req.params.id,
-                    _id: { $in: req.links }
+                    _id: {
+                        $in: req.links,
+                        $eq: req.params.id 
+                    }
                 }
             );
             if (!link)

@@ -1,4 +1,3 @@
-import UserController from "./userController.js";
 import User from "../Models/userModel.js";
 import { generateToken } from "../Middlewares/jwt.js";
 
