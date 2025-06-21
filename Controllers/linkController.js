@@ -60,24 +60,29 @@ const LinkController = {
     putLink: async (req, res) => {
         try {
 
-            const { originalUrl } = req.body;
-            if (!originalUrl)
-                return res.status(400).json({ error: "Original URL is required" });
+            const { originalUrl, targetParamName } = req.body;
+            if (!originalUrl && !targetParamName)
+                return res.status(400).json({ error: "Original URL or target param name is required" });
 
-            const link = await Link.findByIdAndUpdate
+            const link = await Link.findOne
                 (
                     {
                         _id: {
                             $in: req.links,
                             $eq: req.params.id 
                         }
-                    },
-                    { originalUrl },
-                    { new: true }
+                    }
                 );
 
             if (!link)
                 return res.status(404).json({ error: "Link not updated" });
+
+            if (originalUrl)
+                link.originalUrl = originalUrl;
+            if (targetParamName)
+                link.targetParamName = targetParamName;
+            await link.save();
+
             res.status(200).json(link);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -103,7 +108,7 @@ const LinkController = {
     //target
     getLinkTargets: async (req, res) => {
         try {
-            const link = await Link.findById(
+            const link = await Link.findOne(
                 {
                     _id: {
                      $in: req.links,
@@ -122,7 +127,7 @@ const LinkController = {
     },
     postLinkTarget: async (req, res) => {
         try {
-            const link = await Link.findById(
+            const link = await Link.findOne(
                 {
                     _id: {
                         $in: req.links,
@@ -133,7 +138,13 @@ const LinkController = {
             if (!link)
                 return res.status(404).json({ error: "Link not found" });
             const { name, value } = req.body;
-            const target = { name: name ?? "", value: value ?? "" };
+            if (!name || !value)
+                return res.status(400).json({ error: "Name and value are required" });
+            if (link.targetValues.some(target => target.name === name))
+                return res.status(400).json({ error: "Target name already exists" });
+            if (link.targetValues.some(target => target.value === value))
+                return res.status(400).json({ error: "Target value already exists" });
+            const target = { name: name, value: value };
             link.targetValues.push(target);
 
             await link.save();
@@ -145,7 +156,7 @@ const LinkController = {
     },
     putLinkTarget: async (req, res) => {
         try {
-            const link = await Link.findById(
+            const link = await Link.findOne(
                 {
                     _id: {
                         $in: req.links,
@@ -160,8 +171,12 @@ const LinkController = {
             if (!target)
                 return res.status(404).json({ error: "Target not found" });
 
-            target.name = name ?? target.name;
-            target.value = value ?? target.value;
+            if (link.targetValues.some(target => target.name === name))
+                return res.status(400).json({ error: "Target name already exists" });
+            if (link.targetValues.some(target => target.value === value))
+                return res.status(400).json({ error: "Target value already exists" });
+            target.name = name ? name : target.name;
+            target.value = value ? value : target.value;
             await link.save();
             res.status(200).json(target);
         } catch (error) {
@@ -170,7 +185,7 @@ const LinkController = {
     },
     deleteLinkTarget: async (req, res) => {
         try {
-            const link = await Link.findById(
+            const link = await Link.findOne(
                 {
                     _id: {
                         $in: req.links,
@@ -184,7 +199,7 @@ const LinkController = {
             if (!target)
                 return res.status(404).json({ error: "Target not found" });
 
-            target.remove();
+            link.targetValues.pull(target);
             await link.save();
             res.status(200).json(target);
         } catch (error) {
@@ -193,7 +208,7 @@ const LinkController = {
     },
     getClicksBySource: async (req, res) => {
         try {
-            const link = await Link.findById(
+            const link = await Link.findOne(
                 {
                     _id: {
                         $in: req.links,
@@ -213,9 +228,10 @@ const LinkController = {
 
             // 2. אובייקט לספירה לפי שם המקור
             const clicksBySourceName = {};
-            valueToName.forEach(name => {
+            Object.values(valueToName).forEach((name) => {
                 clicksBySourceName[name] = 0;
             });
+            clicksBySourceName["unknown"] = 0;
 
             // 3. מעבר על כל קליק וספירה לפי שם המקור
             link.clicks.forEach(click => {

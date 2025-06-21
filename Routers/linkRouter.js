@@ -15,4 +15,5 @@ LinkRouter.put("/:id/targets/:targetId", (req,res,next) => { console.log("putLin
 LinkRouter.delete("/:id/targets/:targetId", (req,res,next) => { console.log("deleteLinkTarget"); next();} , LinkController.deleteLinkTarget);
 //click
 LinkRouter.get("/:id/clicks", (req,res,next) => { console.log("getClicksBySource"); next();} , LinkController.getClicksBySource);
+
 export default LinkRouter;
